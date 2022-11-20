@@ -1,0 +1,5 @@
+---
+- import_playbook: playbooks/groups/webserver.yml
+- import_playbook: playbooks/groups/database.yml
+- import_playbook: playbooks/groups/phpserver.yml
+- import_playbook: playbooks/glpi.yml

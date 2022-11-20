@@ -1,0 +1,30 @@
+---
+- name: create a new user
+  hosts: all
+  become: true
+  vars_files:
+    - main_vars.yml
+  tasks:
+    - name: create an application user
+      user:
+        name: "{{ application_user }}"
+        state: present
+        group: sudo
+        shell: /bin/bash
+        create_home: true
+
+    - name: disable sudo password
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '{{ application_user }} ALL\='
+        line: '{{ application_user }} ALL=(ALL) NOPASSWD:ALL'
+        validate: '/usr/sbin/visudo -cf %s'
+
+    - name: sending public key to remote node
+      authorized_key:
+        user: "{{ application_user }}"
+        key: '{{ lookup( "file", "/home/ansible/.ssh/id_ecdsa.pub" ) }}'
+        state: present
+...
+

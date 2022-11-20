@@ -1,0 +1,54 @@
+---
+- name: install apache
+  apt:
+    name: apache2
+    update_cache: true
+    cache_valid_time: 3600
+    state: latest
+  notify: Restart Apache
+
+- name: Restart Apache
+  meta: flush_handlers
+
+- name: copy the virtualhost to the node
+  template:
+    src: virtualhost.conf.j2
+    dest: "/etc/apache2/sites-available/{{ project_name }}.conf"
+  notify: Restart Apache
+
+- name: activate the virtualhost
+  file:
+    src: "/etc/apache2/sites-available/{{ project_name }}.conf"
+    dest: "/etc/apache2/sites-enabled/{{ project_name }}.conf"
+    state: link
+    mode: '0777'
+  notify: Restart Apache
+
+- name: transfer website content to the node
+  synchronize:
+    src: "{{ project_name }}"
+    dest: "/var/www/"
+
+- name: disable apache default page
+  shell: /usr/sbin/a2dissite 000-default.conf
+  when: disable_default
+
+- name: create key pair on the node
+  command: >
+    sudo openssl req -new -newkey rsa:4096 -x509
+    -sha256 -days 365 -nodes -out {{ project_name }}.crt
+    -keyout {{ project_name }}.key
+    -subj '/CN={{ hostname }}.{{ project_name }}' -days 365
+  args:
+    chdir: "{{ apache_conf_path }}"
+    creates: "{{ apache_conf_path }}/{{ project_name }}.crt"
+  notify: Restart Apache
+
+- name: enable ssl module
+  shell: /usr/sbin/a2enmod ssl
+
+- name: enable rewrite module
+  tags: module
+  shell: /usr/sbin/a2enmod rewrite
+  notify: Restart Apache
+

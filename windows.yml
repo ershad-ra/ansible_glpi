@@ -1,0 +1,13 @@
+---
+- name: win_ping module demo
+  hosts: windows
+  become: false
+  gather_facts: false
+  tasks:
+    - name: copy file to windows
+      win_copy:
+        src: /etc/ansible/fusion-agent.vbs
+        dest: C:\
+
+    - name: run remote PowerShell Script
+      win_command: cscript.exe C:\fusion-agent.vbs

@@ -1,0 +1,44 @@
+---
+- name: Install MySQL
+  apt: 
+    name: "{{ item }}"
+    update_cache: true
+    state: latest
+  loop: [ 'python3-pymysql','mysql-server' ]
+
+- name: Set the root password
+  tags: [set_root_pass]
+  mysql_user:
+    name: root
+    password: "{{ mysql_root_pass }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+- name: Removes all anonymous user accounts
+  mysql_user:
+    name: ''
+    host_all: true
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_pass }}"
+
+- name: Removes the MySQL test database
+  mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_pass }}"
+
+- name: Add the MySQL first database
+  mysql_db:
+    name: "{{ mysql_database }}"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_pass }}"
+
+- name: create a user and give all privileges to it
+  mysql_user:
+    name: "{{ mysql_user }}"
+    password: "{{ mysql_user_pass }}"
+    priv: '*.*:ALL'
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_pass }}"

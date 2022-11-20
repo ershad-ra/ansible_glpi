@@ -1,0 +1,11 @@
+---
+- hosts: webserver
+  become: true
+  vars_files:
+    main_vars.yml
+  tasks:
+    - name: delete install.php file in GLPI
+      file:
+        path: "/var/www/{{ project_name }}/install/install.php"
+        state: absent
+...

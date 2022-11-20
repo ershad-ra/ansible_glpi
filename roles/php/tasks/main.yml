@@ -1,0 +1,20 @@
+---
+- name: install php8.1 packages needed for GLPI installation
+  apt:
+    update_cache: true
+    cache_valid_time: 3600
+    pkg: "{{ php_packages }}"
+
+- name: Modify php.ini to secure sessions
+  lineinfile:
+    path: /etc/php/8.1/cli/php.ini
+    regexp: '^;session.cookie_secure'
+    line: 'session.cookie_secure = On'
+
+- name: Modify php.ini to secure sessions
+  lineinfile:
+    path: /etc/php/8.1/cli/php.ini
+    regexp: '^session.cookie_httponly'
+    line: 'session.cookie_httponly = On'
+  notify: Restart Apache
+

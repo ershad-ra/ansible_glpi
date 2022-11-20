@@ -1,0 +1,10 @@
+---
+project_name: webserver
+hostname: client1
+domain_name: adrarnum.local
+application_user: glpi  # this variable is to define new user creating in create_user.yml
+mysql_root_pass: 1234
+mysql_database: glpidb
+mysql_user: "{{ application_user }}"
+mysql_user_pass: 1234
+...

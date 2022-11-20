@@ -1,0 +1,19 @@
+---
+- hosts: all
+  user: user1
+  become: true
+  name: hostname changing
+  vars:
+    hostname: clientx
+    domain_name: adrarnum.local
+  tasks:
+  - name: configure hostname
+    hostname:
+      name: "{{ hostname }}"
+
+  - name: FQND set  
+    lineinfile:
+      dest: /etc/hosts
+      state: present
+      regexp: '127\.0\.1\.\d'
+      line: "127.0.1.1 {{ hostname }}.{{ domain_name }} {{ hostname }}"

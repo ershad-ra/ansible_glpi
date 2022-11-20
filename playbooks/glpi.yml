@@ -1,0 +1,51 @@
+---
+- hosts: webserver
+  become: true
+  vars_files:
+    main_vars.yml
+  tasks:
+    - name: transfer the glpi content to glpi documentroot
+      synchronize:
+        src: glpi/
+        dest: "/var/www/{{ project_name }}/"
+
+    - name: transfer fusioninventory plugin
+      synchronize:
+        src: fusioninventory/
+        dest: "/var/www/{{ project_name }}/plugins/fusioninventory/"
+
+    - name: delete the apache role's index.html file
+      file:
+        path: "/var/www/{{ project_name }}/index.html"
+        state: absent
+
+    - name: change ownership to www-data
+      file:
+        path: "/var/www/{{ project_name }}"
+        state: directory
+        recurse: true
+        owner: www-data
+        group: www-data
+
+    - name: Modify the DocumentRoot in the virtualhost
+      lineinfile:
+        path: '/etc/apache2/sites-available/{{ project_name }}.conf'
+        regexp: '^(.*)DocumentRoot(.*)$'
+        line: '        DocumentRoot /var/www/{{ project_name }}'
+      notify: Restart Apache
+    
+    - name: adding a block to apache2.conf
+      blockinfile:
+        path: /etc/apache2/apache2.conf
+        block: |
+          <Directory /var/www/{{ project_name }}>
+          AllowOverride All
+          </Directory>
+      notify: Restart Apache
+
+  handlers:
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
+

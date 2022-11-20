@@ -1,0 +1,6 @@
+---
+- hosts: phpserver      #this is the group we have configured in hosts file
+  become: true
+  roles:
+  - php
+
